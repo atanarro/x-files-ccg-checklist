@@ -1,4 +1,6 @@
 <script>
+import { computed } from 'vue'
+
 import Table from './components/Table.vue';
 import data from './card-data.js';
 
@@ -7,12 +9,9 @@ export default {
   components: {
     Table
   },
-  computed: {
-    cardData() {
-      const cards = Object.seal(data);
-      cards.sort();
-      return cards;
-    },
+  setup() {
+    const cardData = computed(() => data);
+    return {cardData};
   },
 }
 </script>
@@ -22,10 +21,9 @@ export default {
   <Table :cards="cardData" />
 </template>
 
-<style rel="stylesheet/scss">
+<style rel="stylesheet/css">
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
-
-#app {
+body {
   font-family: 'Special Elite', cursive;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

@@ -1,50 +1,48 @@
 <script>
+import { computed, ref } from 'vue'
+import { useSorting } from '@/functions/useSorting';
+import Checkbox from "@/components/Checkbox";
+
 export default {
   name: 'Table',
+  components: {Checkbox},
   props: {
     cards: {type: Array, default: () => []},
   },
-  data() {
-    return {
-      sortCriteria: 'affiliation',
-      model: {
-        id: {},
-        affiliation: {},
-        motive: {},
-        method: {},
-        result: {}
-      }
-    };
-  },
-  computed: {
-    sortedCards() {
-      const cards = this.cards.map(card=>({
+  setup(props) {
+
+    const {sortBy, sortCriteria} = useSorting();
+
+    const excluded = ref({
+      id: {},
+      affiliation: {},
+      motive: {},
+      method: {},
+      result: {}
+    });
+
+    props.cards.forEach(({id, affiliation, motive, method, result}) => {
+      excluded.value.id[id] = false;
+      excluded.value.affiliation[affiliation] = false;
+      excluded.value.motive[motive] = false;
+      excluded.value.method[method] = false;
+      excluded.value.result[result] = false;
+    });
+
+    const sortedCards = computed(() => {
+      const isExcluded = (card)=> Object.keys(excluded.value).reduce((acc, cur) => acc || excluded.value[cur][card[cur]], false);
+      const cards = props.cards.map(card=>({
         ...card,
-        excluded: this.excluded(card),
+        excluded: isExcluded(card),
       }));
 
       cards.sort((cardA, cardB) =>{
-        return cardA[this.sortCriteria] > cardB[this.sortCriteria] ? 1 : -1;
+        return cardA[sortCriteria.value] > cardB[sortCriteria.value] ? 1 : -1;
       });
       return cards;
-    },
-  },
-  created() {
-    this.sortedCards.forEach(({id, affiliation, motive, method, result}) => {
-      this.model.id[id] = false;
-      this.model.affiliation[affiliation] = false;
-      this.model.motive[motive] = false;
-      this.model.method[method] = false;
-      this.model.result[result] = false;
     });
-  },
-  methods: {
-    sortBy(criteria) {
-      this.sortCriteria = criteria;
-    },
-    excluded(card) {
-      return Object.keys(this.model).reduce((acc, cur) => acc || this.model[cur][card[cur]],  false);
-    },
+
+    return {sortedCards, excluded, sortBy, sortCriteria};
   },
 };
 </script>
@@ -78,60 +76,62 @@ export default {
         :class="{excluded: card.excluded}"
       >
         <td>
-          <label
-            :for="card.id + '-name'"
+          <Checkbox
+            :id="card.id + '-name'"
+            v-model="excluded.id[card.id]"
+            :name="card.id + '-name'"
             :title="card.id"
+            :excluded="card.excluded"
           >
-            <input
-              :id="card.id + '-name'"
-              v-model="model.id[card.id]"
-              type="checkbox"
-              :name="card.id + '-name'"
-            >{{ card.name }}</label>
+            {{ card.name }}
+          </Checkbox>
         </td>
         <td>
-          <label :for="card.id + '-affiliation'">
-            <input
-              :id="card.id + '-affiliation'"
-              v-model="model.affiliation[card.affiliation]"
-              type="checkbox"
-              :name="card.id + '-affiliation'"
-            >{{ card.affiliation }}</label>
+          <Checkbox
+            :id="card.id + '-affiliation'"
+            v-model="excluded.affiliation[card.affiliation]"
+            :name="card.id + '-affiliation'"
+            :excluded="card.excluded"
+          >
+            {{ card.affiliation }}
+          </Checkbox>
         </td>
         <td>
-          <label :for="card.id + '-motive'">
-            <input
-              :id="card.id + '-motive'"
-              v-model="model.motive[card.motive]"
-              type="checkbox"
-              :name="card.id + '-motive'"
-            >{{ card.motive }}</label>
+          <Checkbox
+            :id="card.id + '-motive'"
+            v-model="excluded.motive[card.motive]"
+            :name="card.id + '-motive'"
+            :excluded="card.excluded"
+          >
+            {{ card.motive }}
+          </Checkbox>
         </td>
         <td>
-          <label :for="card.id + '-method'">
-            <input
-              :id="card.id + '-method'"
-              v-model="model.method[card.method]"
-              type="checkbox"
-              :name="card.id + '-method'"
-            >{{ card.method }}</label>
+          <Checkbox
+            :id="card.id + '-method'"
+            v-model="excluded.method[card.method]"
+            :name="card.id + '-method'"
+            :excluded="card.excluded"
+          >
+            {{ card.method }}
+          </Checkbox>
         </td>
         <td>
-          <label :for="card.id + '-result'">
-            <input
-              :id="card.id + '-result'"
-              v-model="model.result[card.result]"
-              type="checkbox"
-              :name="card.id + '-result'"
-            >{{ card.result }}
-          </label>
+          <Checkbox
+            :id="card.id + '-result'"
+            v-model="excluded.result[card.result]"
+            :name="card.id + '-result'"
+            :excluded="card.excluded"
+          >
+            {{ card.result }}
+          </Checkbox>
         </td>
       </tr>
     </tbody>
   </table>
 </template>
 
-<style scoped rel="stylesheet/scss">
+<style scoped rel="stylesheet/css">
 table {
   border-collapse: collapse;
 }
@@ -153,55 +153,10 @@ table th {
   padding: 5px 5px 0 5px;
 }
 
-label {
-  cursor: pointer;
-}
-
 td {
   max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.excluded label {
-  color: grey;
-  text-decoration: line-through;
-}
-
-input[type=checkbox] {
-  position: relative;
-  cursor: pointer;
-}
-
-.excluded input {
-  color: grey;
-}
-
-.excluded input[type=checkbox]:before {
-  color: grey;
-  border-color: grey;
-}
-
-input[type=checkbox]:before {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  top: 0;
-  left: 0;
-  border: 1px solid #2c3e50;
-  background-color: white;
-  color:  #2c3e50;
-  box-shadow: 2px 2px 0 -1px;
-}
-input[type=checkbox]:checked:after {
-  content: "×";
-  font-weight: bold;
-  display: block;
-  position: absolute;
-  top: -2px;
-  left: 2px;
 }
 </style>
