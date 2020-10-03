@@ -141,11 +141,18 @@ table tbody {
 }
 
 table {
-  border-collapse: inherit;
+  border-collapse: collapse;
   text-align: left;
   width: 100%;
   max-width: 1280px;
 }
+
+tr {
+  border: solid;
+  border-width: 8px 0;
+  border-color: transparent;
+}
+
 table th {
   cursor: pointer;
   background: #2c3e50;
@@ -158,5 +165,6 @@ td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-transform: capitalize;
 }
 </style>
