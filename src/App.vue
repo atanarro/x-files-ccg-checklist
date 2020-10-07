@@ -20,7 +20,11 @@ export default {
   <h1>The X-Files CCG checklist</h1>
   <Table :cards="cardData" />
 </template>
-
+<style scoped rel="stylesheet/css">
+h1 {
+  text-align: center;
+}
+</style>
 <style rel="stylesheet/css">
 @import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
 body {

@@ -1,5 +1,5 @@
 <script>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 export default {
   name: 'Checkbox',
@@ -13,6 +13,10 @@ export default {
   emits: ['update:modelValue'],
   setup(props) {
     const internalValue = ref(props.modelValue);
+    watch(
+      () => props.modelValue,
+      (newValue) => {internalValue.value = newValue;}
+    );
     return {internalValue};
   },
 };

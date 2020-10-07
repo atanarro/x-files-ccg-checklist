@@ -133,6 +133,7 @@ export default {
 
 <style scoped rel="stylesheet/css">
 table {
+  margin: auto;
   border-collapse: collapse;
 }
 
